@@ -8,45 +8,6 @@ protocol WorkoutCreationViewControllerDelegate: class {
 
 class WorkoutCreationViewController: UIViewController {
     
-    
-//    
-//    enum gradeValues {
-//        case a, aMinus, bPlus, b, bMinus, cPlus, c, cMinus, dPlus, d, dMinus, f
-//        var gradeValue: Double {
-//            switch self {
-//            case .a : return 4.0
-//            case .aMinus : return 3.7
-//            case .bPlus : return 3.3
-//            case .b : return 3.0
-//            case .bMinus : return 2.7
-//            case .cPlus : return 2.3
-//            case .c : return 2.0
-//            case .cMinus : return 1.7
-//            case .dPlus : return 1.3
-//            case .d : return 1.0
-//            case .dMinus : return 0.7
-//            case .f: return 0
-//            }
-//        }
-//        var gradeLetter: String {
-//            switch self {
-//            case .a : return "A"
-//            case .aMinus : return "A-"
-//            case .bPlus : return "B+"
-//            case .b : return "B"
-//            case .bMinus : return "B-"
-//            case .cPlus : return "C+"
-//            case .c : return "C"
-//            case .cMinus : return "C-"
-//            case .dPlus : return "D+"
-//            case .d : return "D"
-//            case .dMinus : return "D-"
-//            case .f: return "F"
-//            }
-//        }
-//        
-//    }
-//  
 
 
     weak var delegate: WorkoutCreationViewControllerDelegate?
@@ -58,7 +19,10 @@ class WorkoutCreationViewController: UIViewController {
     @IBOutlet private weak var creditHourStepper: UIStepper!
     @IBOutlet private weak var creditHourValueLabel: UILabel!
     
+    @IBOutlet weak var customGradeEntryStackView: UIStackView!
+    @IBOutlet private weak var gradeStepperEntryStackView: UIStackView!
     @IBOutlet fileprivate weak var tappableBackgroundView: UIView!
+    @IBOutlet weak var customGradeEntryTextField: UITextField!
     
     
     override func viewDidLoad() {
@@ -68,12 +32,12 @@ class WorkoutCreationViewController: UIViewController {
         
         // Configure minutes stepper and label
         gradeStepper.minimumValue = 0
-        gradeStepper.maximumValue = Double(gradeValueArray.count - 1)
-        gradeStepper.value = Double(gradeValueArray.count - 1)
+        gradeStepper.maximumValue = Double(GradeValue.allCases.count - 1)
+        gradeStepper.value = Double(GradeValue.allCases.count - 1)
 
-        gradeNumberValue.text = "\(gradeValueArray[Int(gradeStepper.value)].gradeValue)"
+        gradeNumberValue.text = "\(GradeValue.allCases[Int(gradeStepper.value)].rawValue)"
 
-        // Calories per minute 
+        // Calories per minute
         creditHourStepper.minimumValue = 1
         creditHourStepper.maximumValue = 90
         creditHourStepper.value = 3
@@ -86,13 +50,24 @@ class WorkoutCreationViewController: UIViewController {
         tappableBackgroundView.isHidden = true
 
         // Configure delegates
+        customGradeEntryTextField.delegate = self
         nameField.delegate = self
+        
+    }
+    @IBAction func customSwitchChanged(_ sender: UISwitch) {
+        if sender.isOn {
+            customGradeEntryStackView.isHidden = false
+            gradeStepperEntryStackView.isHidden = true
+        } else {
+            customGradeEntryStackView.isHidden = true
+            gradeStepperEntryStackView.isHidden = false
+        }
         
     }
     
     @IBAction func gradeValueChanged(_ sender: UIStepper) {
-        gradeNumberValue.text =  "\(gradeValueArray[Int(gradeStepper.value)].gradeValue)"
-        gradeLetterValue.text = "\(gradeValueArray[Int(gradeStepper.value)].gradeLetter)"
+        gradeNumberValue.text =  "\(GradeValue.allCases[Int(gradeStepper.value)].rawValue)"
+        gradeLetterValue.text = "\(GradeValue.allCases[Int(gradeStepper.value)].gradeLetter)"
     }
 
     
@@ -104,14 +79,42 @@ class WorkoutCreationViewController: UIViewController {
     @IBAction func addClassButtonPressed(_ sender: Any) {
         var name = nameField.text ?? ""
         if name == "" { name = "No Name" }
-        
-        let grade = gradeValueArray[Int(gradeStepper.value)].gradeValue
-        let gradeLetter = gradeValueArray[Int(gradeStepper.value)].gradeLetter
+        let grade: Double
+        let gradeLetter: String
         let creditHours = Int(creditHourStepper.value)
+
+        if customGradeEntryStackView.isHidden == false {
+            
+            if let customGradeEntered = Double(customGradeEntryTextField.text!) {
+                print(customGradeEntered)
+                if Double(customGradeEntered) < 0.0 || Double(customGradeEntered) > 4.0 {
+                    sendAlert(message: "Please enter a number between 0.0 and 4.0")
+                }
+                grade = Double(customGradeEntryTextField.text!)!
+                gradeLetter = "custom"
+                let currentClassEntry = classEntry(id: UUID(), name: name,  grade: grade, gradeLetter: gradeLetter, creditHours: creditHours)
+                delegate?.save(workout: currentClassEntry)
+
+            }
+            else {
+                if (customGradeEntryTextField.text!.components(separatedBy: ".").count) > 1 {
+                    sendAlert(message: "Please make sure you have only one decimal point")
+                } else {
+                sendAlert(message: "Please enter a grade")
+                }
+            }
+
+        } else {
+            grade = GradeValue.allCases[Int(gradeStepper.value)].rawValue
+            gradeLetter = "\(GradeValue.allCases[Int(gradeStepper.value)].gradeLetter)"
+            let currentClassEntry = classEntry(id: UUID(), name: name,  grade: grade, gradeLetter: gradeLetter, creditHours: creditHours)
+            delegate?.save(workout: currentClassEntry)
+
+        }
+//        let gradeLetter = "\(GradeValue.allCases[Int(gradeStepper.value)].gradeLetter)"
         
-        let currentClassEntry = classEntry(id: UUID(), name: name,  grade: grade, gradeLetter: gradeLetter, creditHours: creditHours)
+
         
-        delegate?.save(workout: currentClassEntry)
         let _ = navigationController?.popViewController(animated: true)
     }
     
@@ -136,6 +139,21 @@ extension WorkoutCreationViewController: UITextFieldDelegate {
         self.view.endEditing(true)
         tappableBackgroundView.isHidden = true
         return true
+    }
+    
+    func sendAlert (message:String){
+        let alert = UIAlertController(title: title, message: message, preferredStyle: UIAlertControllerStyle.alert)
+        let ok = UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil)
+        alert.addAction(ok)
+        
+        if let presented = self.presentedViewController {
+            presented.removeFromParentViewController()
+        }
+        
+        if presentedViewController == nil {
+            self.present(alert, animated: true, completion: nil)
+        }
+        
     }
 }
 
