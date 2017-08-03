@@ -1,17 +1,6 @@
 
 import Foundation
 
-struct classEntry {
-    let id: UUID
-    let name: String
-    let grade: Double
-    let gradeLetter: String
-    let creditHours: Int
-    func gradeScore () -> Double {
-        return Double(creditHours) * grade
-    }
-
-}
 
 //var gradeValues: [(String, Double)] = [ ("A", 4.0),("A-", 3.70), ("B+", 3.3), ("B", 3.3), ("B-", 2.7), ("C+", 2.3), ("C", 2.0), ("C-", 1.7), ("D+", 1.3), ("D", 1.0), ("D-", 0.7), ("F", 0),("FN", 0)]
 //
@@ -104,6 +93,18 @@ enum GradeValue: Double {
 //         gradeValues.a]
 
 
+struct classEntry {
+    let id: UUID
+    let name: String
+    let grade: Double
+    let gradeLetter: String
+    let creditHours: Int
+    let isProjectedGrade: Bool
+    func gradeScore () -> Double {
+        return Double(creditHours) * grade
+    }
+    
+}
 extension classEntry {
     func toDictionary() -> JsonDictionary {
         return [
@@ -111,8 +112,8 @@ extension classEntry {
             "name": self.name,
             "grade": self.grade,
             "gradeLetter": self.gradeLetter,
-            "creditHours": self.creditHours
-            
+            "creditHours": self.creditHours,
+            "isProjectedGrade": self.isProjectedGrade
         ]
     }
     
@@ -123,10 +124,11 @@ extension classEntry {
             let name = dict["name"] as? String,
             let grade = dict["grade"] as? Double,
             let creditHours = dict["creditHours"] as? Int,
-            let gradeLetter = dict["gradeLetter"] as? String
+            let gradeLetter = dict["gradeLetter"] as? String,
+            let isProjectedGrade = dict["isProjectedGrade"] as? Bool
         else {
             return nil
         }
-        return classEntry(id: id, name: name, grade: grade, gradeLetter: gradeLetter, creditHours: creditHours)
+        return classEntry(id: id, name: name, grade: grade, gradeLetter: gradeLetter, creditHours: creditHours, isProjectedGrade: isProjectedGrade)
     }
 }

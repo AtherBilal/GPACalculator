@@ -43,7 +43,12 @@ extension JsonStoragePersistence {
     func save(data: JsonDictionary, withId id: String) -> Bool {
         return FileManager.default.save(jsonDict: data, to: directoryUrl, withId: id)
     }
-    
+    @discardableResult
+    func removeJsonFile(withId id: String) -> Bool {
+        let fileUrl = directoryUrl.appendingPathComponent("\(id).\(fileType)")
+        return FileManager.default.deleteFile(atUrl: fileUrl)
+    }
+
     func read(jsonFileWithId id: String) -> JsonDictionary? {
         return FileManager.default.readJsonDict(withId: id, at: directoryUrl)
     }

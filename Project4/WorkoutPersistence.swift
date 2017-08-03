@@ -3,6 +3,7 @@ import Foundation
 protocol WorkoutPersistenceInterface {
     var savedWorkouts: [classEntry] { get }
     func save(workout: classEntry)
+    func delete(classEntry: classEntry)
 }
 
 class WorkoutPersistence: JsonStoragePersistence, WorkoutPersistenceInterface {
@@ -20,5 +21,8 @@ class WorkoutPersistence: JsonStoragePersistence, WorkoutPersistenceInterface {
     
     func save(workout: classEntry) {
         save(data: workout.toDictionary(), withId: workout.id.uuidString)
+    }
+    func delete(classEntry: classEntry) {
+        removeJsonFile(withId: classEntry.id.uuidString)
     }
 }

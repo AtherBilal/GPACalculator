@@ -11,12 +11,19 @@ class WorkoutListTableViewCell: UITableViewCell {
     
     func decorate(with classEntry: classEntry) {
         nameLabel.text = classEntry.name
+        
+        var gradeLabelValue: String = ""
+        
+        if classEntry.isProjectedGrade {
+            gradeLabelValue += "Projected: "
+        }
         if classEntry.gradeLetter != "custom" {
-            gradeLabel.text = "\(classEntry.grade) or \(classEntry.gradeLetter)"
+            gradeLabelValue += "\(classEntry.grade) or \(classEntry.gradeLetter)"
         } else {
-            gradeLabel.text = "\(classEntry.grade)"
+            gradeLabelValue += "\(classEntry.grade)"
 
         }
+        gradeLabel.text = gradeLabelValue
         gradeScoreLabel.text = "\(classEntry.gradeScore()) Score"
         creditHoursLabel.text = "\(classEntry.creditHours) Credit Hours"
     }
