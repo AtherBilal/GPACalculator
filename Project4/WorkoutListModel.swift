@@ -40,6 +40,13 @@ class WorkoutListModel: WorkoutListModelInterface {
             var total = 0.0
             workouts.forEach {
                 if $0.isProjectedGrade == false {
+                    if $0.isRepeat {
+                        total += $0.completedNewGradeScore()!
+                    } else {
+                        total += $0.gradeScore()
+                    }
+                } else if $0.isProjectedGrade && $0.isRepeat {
+                    print("projected and repeaat")
                     total += $0.gradeScore()
                 }
             }
@@ -56,7 +63,11 @@ class WorkoutListModel: WorkoutListModelInterface {
             var total = 0.0
             workouts.forEach {
                 if $0.isProjectedGrade {
-                    total += $0.gradeScore()
+                    if $0.isRepeat {
+                        total += $0.projectedNewGradeScore()!
+                    } else {
+                        total += $0.gradeScore()
+                    }
                 }
             }
             return total
@@ -68,16 +79,16 @@ class WorkoutListModel: WorkoutListModelInterface {
     
     var totalOverallGradeScore: Double? {
         if workouts.count != 0 {
-            
+            var total = 0.0
+            workouts.forEach {
+                total += $0.gradeScore()
+            }
+            return total
         } else {
             return nil
         }
-        var total = 0.0
-        workouts.forEach {
-            total += $0.gradeScore()
-        }
-        return total
     }
+    
     var totalOverallCreditHours: Int? {
         if workouts.count != 0 {
             var total = 0
@@ -96,6 +107,8 @@ class WorkoutListModel: WorkoutListModelInterface {
             var total = 0
             workouts.forEach {
                 if $0.isProjectedGrade == false {
+                    total += $0.creditHours
+                } else if $0.isProjectedGrade && $0.isRepeat {
                     total += $0.creditHours
                 }
             }

@@ -97,12 +97,31 @@ struct classEntry {
     let id: UUID
     let name: String
     let grade: Double
+    let newGrade: Double?
+    let newGradeLetter: String?
     let gradeLetter: String
     let creditHours: Int
     let isProjectedGrade: Bool
+    let isRepeat: Bool
+    
     func gradeScore () -> Double {
         return Double(creditHours) * grade
     }
+    func projectedNewGradeScore() -> Double? {
+        if isRepeat && isProjectedGrade {
+            return Double(creditHours) * newGrade!
+        } else {
+            return nil
+        }
+    }
+    func completedNewGradeScore() -> Double? {
+        if isRepeat && !isProjectedGrade {
+            return Double(creditHours) * newGrade!
+        } else {
+            return nil
+        }
+    }
+    
     
 }
 extension classEntry {
@@ -111,9 +130,12 @@ extension classEntry {
             "id": self.id.uuidString,
             "name": self.name,
             "grade": self.grade,
+            "newGrade": self.newGrade as Any,
+            "newGradeLetter": self.newGradeLetter as Any,
             "gradeLetter": self.gradeLetter,
             "creditHours": self.creditHours,
-            "isProjectedGrade": self.isProjectedGrade
+            "isProjectedGrade": self.isProjectedGrade,
+            "isRepeat": self.isRepeat
         ]
     }
     
@@ -123,12 +145,15 @@ extension classEntry {
             let id = UUID(uuidString: idString),
             let name = dict["name"] as? String,
             let grade = dict["grade"] as? Double,
+            let newGrade = dict["newGrade"] as? Double?,
+            let newGradeLetter = dict["newGradeLetter"] as? String?,
             let creditHours = dict["creditHours"] as? Int,
             let gradeLetter = dict["gradeLetter"] as? String,
-            let isProjectedGrade = dict["isProjectedGrade"] as? Bool
+            let isProjectedGrade = dict["isProjectedGrade"] as? Bool,
+            let isRepeat = dict["isRepeat"] as? Bool
         else {
             return nil
         }
-        return classEntry(id: id, name: name, grade: grade, gradeLetter: gradeLetter, creditHours: creditHours, isProjectedGrade: isProjectedGrade)
+        return classEntry(id: id, name: name, grade: grade, newGrade: newGrade,newGradeLetter: newGradeLetter, gradeLetter: gradeLetter, creditHours: creditHours, isProjectedGrade: isProjectedGrade, isRepeat: isRepeat)
     }
 }

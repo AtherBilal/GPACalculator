@@ -77,6 +77,10 @@ extension WorkoutListViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return model.count
     }
+    func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+        return true
+    }
+
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard
@@ -84,7 +88,7 @@ extension WorkoutListViewController: UITableViewDataSource {
                                                      for: indexPath) as? WorkoutListTableViewCell,
             let workout = model.workout(atIndex: indexPath.row)
         else { return UITableViewCell() }
-        
+    
         cell.decorate(with: workout)
 //        print("HERE IT IS COMPLETED")
 //        print(model.currentCompletedGPA!)
@@ -92,7 +96,11 @@ extension WorkoutListViewController: UITableViewDataSource {
 //        print(model.currentProjectedGPA!)
         return cell
     }
-    
+    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
+        if editingStyle == .delete {
+            model.delete(classEntrytoDelete: model.workout(atIndex: indexPath.row)!)
+        }
+    }
 }
 
 extension WorkoutListViewController: WorkoutCreationViewControllerDelegate {

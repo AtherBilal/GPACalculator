@@ -22,12 +22,23 @@ class WorkoutCreationViewController: UIViewController {
     @IBOutlet private weak var creditHourValueLabel: UILabel!
     @IBOutlet private weak var customGradeSwitch: UISwitch!
     
-    @IBOutlet weak var customGradeEntryStackView: UIStackView!
+    @IBOutlet weak var gradeNumberOrOldGradeNumberLabel: UILabel!
+    @IBOutlet private weak var repeatCourseGradeEntryStackView: UIStackView!
+    
+    @IBOutlet private weak var customGradeEntryStackView: UIStackView!
     @IBOutlet private weak var gradeStepperEntryStackView: UIStackView!
     @IBOutlet fileprivate weak var tappableBackgroundView: UIView!
-    @IBOutlet weak var customGradeEntryTextField: UITextField!
+    @IBOutlet private weak var customGradeEntryTextField: UITextField!
+    @IBOutlet private weak var newGradeNumberValueLabel: UILabel!
+    @IBOutlet private weak var newGradeLetterValueLabel: UILabel!
     
+    @IBOutlet private weak var isRepeatSwitch: UISwitch!
     @IBOutlet private weak var isProjectedClassSwitch: UISwitch!
+    @IBOutlet private weak var newGradeStepper: UIStepper!
+    @IBOutlet private weak var isProjectedLabel: UILabel!
+    
+    
+
     
     var selectedClass: classEntry?
 
@@ -41,17 +52,31 @@ class WorkoutCreationViewController: UIViewController {
             } else {
             gradeStepper.value = Double(GradeValue.allCases.count - 1)
             gradeNumberValue.text = "\(GradeValue.allCases[Int(gradeStepper.value)].rawValue)"
-            creditHourValueLabel.text = "\(Int(creditHourStepper.value))"
+            
+            
+            
+            newGradeStepper.value = Double(GradeValue.allCases.count - 1)
+            newGradeLetterValueLabel.text = "\(GradeValue.allCases[Int(newGradeStepper.value)].gradeLetter)"
+            
+            newGradeNumberValueLabel.text = "\(GradeValue.allCases[Int(newGradeStepper.value)].rawValue)"
+
+            
             creditHourStepper.value = 3
+            creditHourValueLabel.text = "\(Int(creditHourStepper.value))"
 
 
         }
         // Configure minutes stepper and label
+        
+        
         gradeStepper.minimumValue = 0
         gradeStepper.maximumValue = Double(GradeValue.allCases.count - 1)
+        
 
 
-
+        newGradeStepper.minimumValue = 0
+        newGradeStepper.maximumValue = Double(GradeValue.allCases.count - 1)
+        
         // Calories per minute
         creditHourStepper.minimumValue = 1
         creditHourStepper.maximumValue = 90
@@ -65,9 +90,36 @@ class WorkoutCreationViewController: UIViewController {
         // Configure delegates
         customGradeEntryTextField.delegate = self
         nameField.delegate = self
-        
     }
 
+    @IBAction func isRepeatSwitchChanged(_ sender: UISwitch) {
+        let wasCustomSwitchOn = customGradeSwitch.isOn
+        if sender.isOn {
+            customGradeEntryStackView.isHidden = true
+            customGradeSwitch.isEnabled = false
+            repeatCourseGradeEntryStackView.isHidden = false
+            gradeStepper.minimumValue = 0
+            gradeStepper.maximumValue = 4
+            gradeValueChanged(gradeStepper)
+            gradeNumberOrOldGradeNumberLabel.text = "Previous Grade:"
+            isProjectedLabel.text = "Projected New Grade?"
+
+        } else {
+            customGradeEntryStackView.isHidden = wasCustomSwitchOn ? false : true
+            customGradeSwitch.isEnabled = true
+            repeatCourseGradeEntryStackView.isHidden = true
+            gradeStepper.minimumValue = 0
+            gradeStepper.maximumValue = Double(GradeValue.allCases.count - 1)
+            gradeNumberOrOldGradeNumberLabel.text = "Grade Value:"
+            isProjectedLabel.text = "Projected?"
+
+            
+        }
+
+    }
+    
+
+    
     @IBAction func customSwitchChanged(_ sender: UISwitch) {
         if sender.isOn {
             customGradeEntryStackView.isHidden = false
@@ -78,10 +130,17 @@ class WorkoutCreationViewController: UIViewController {
         }
         
     }
+    @IBAction func newGradeStepperValueChanged(_ sender: UIStepper) {
+        newGradeNumberValueLabel.text =  "\(GradeValue.allCases[Int(newGradeStepper.value)].rawValue)"
+        newGradeLetterValueLabel.text = "\(GradeValue.allCases[Int(newGradeStepper.value)].gradeLetter)"
+    }
     
     @IBAction func gradeValueChanged(_ sender: UIStepper) {
         gradeNumberValue.text =  "\(GradeValue.allCases[Int(gradeStepper.value)].rawValue)"
         gradeLetterValue.text = "\(GradeValue.allCases[Int(gradeStepper.value)].gradeLetter)"
+        
+//        isRepeatSwitch.isEnabled = GradeValue.allCases[Int(gradeStepper.value)].rawValue > 1.7 ? true : false
+
     }
 
     
@@ -94,20 +153,25 @@ class WorkoutCreationViewController: UIViewController {
         var name = nameField.text ?? ""
         if name == "" { name = "No Name" }
         var grade: Double
+        var newGrade: Double?
+        let newGradeLetter: String?
+        let isRepeat: Bool
         var gradeLetter = "custom"
         let creditHours = Int(creditHourStepper.value)
         let isProjected: Bool
         var meetsConditions = true
         
-        if isProjectedClassSwitch.isOn {
-            isProjected = true
-        } else {
-            isProjected = false
-        }
-        
+        isProjected = isProjectedClassSwitch.isOn ? true : false
+
         enum customInputError: Error {
             case noInput, moreThanOneDecimal, tooHigh, tooLow
         }
+
+        isRepeat = isRepeatSwitch.isOn ? true : false
+        
+        newGrade = isRepeatSwitch.isOn ? GradeValue.allCases[Int(newGradeStepper.value)].rawValue : nil
+        newGradeLetter = isRepeatSwitch.isOn ? GradeValue.allCases[Int(newGradeStepper.value)].gradeLetter : nil
+
         
         func checkCustomInputValue() throws {
             
@@ -129,7 +193,7 @@ class WorkoutCreationViewController: UIViewController {
         }
         
         do {
-            if customGradeSwitch.isOn == true {
+            if customGradeSwitch.isOn == true && customGradeSwitch.isEnabled == true {
                 try checkCustomInputValue()
                 grade = Double(customGradeEntryTextField.text!)!
                 gradeLetter = "custom"
@@ -140,12 +204,12 @@ class WorkoutCreationViewController: UIViewController {
             
             if let editingAClass = selectedClass {
                 print("should be replacing an item here")
-                let currentClassEntry = classEntry(id: editingAClass.id, name: name,  grade: grade, gradeLetter: gradeLetter, creditHours: creditHours, isProjectedGrade: isProjected)
+                let currentClassEntry = classEntry(id: editingAClass.id, name: name,  grade: grade, newGrade: newGrade, newGradeLetter: newGradeLetter, gradeLetter: gradeLetter, creditHours: creditHours, isProjectedGrade: isProjected, isRepeat: isRepeat)
                 delegate?.delete(classEntrytoDelete: currentClassEntry)
                 delegate?.save(workout: currentClassEntry)
 
             } else {
-                let currentClassEntry = classEntry(id: UUID(), name: name,  grade: grade, gradeLetter: gradeLetter, creditHours: creditHours, isProjectedGrade: isProjected)
+                let currentClassEntry = classEntry(id: UUID(), name: name,  grade: grade,newGrade: newGrade, newGradeLetter: newGradeLetter, gradeLetter: gradeLetter, creditHours: creditHours, isProjectedGrade: isProjected, isRepeat: isRepeat)
                 delegate?.save(workout: currentClassEntry)
 
             }
