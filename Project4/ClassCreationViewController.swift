@@ -8,7 +8,7 @@ protocol WorkoutCreationViewControllerDelegate: class {
 
 }
 
-class WorkoutCreationViewController: UIViewController {
+class ClassCreationViewController: UIViewController {
     
 
 
@@ -267,7 +267,7 @@ class WorkoutCreationViewController: UIViewController {
     }
 }
 
-extension WorkoutCreationViewController: UITextFieldDelegate {
+extension ClassCreationViewController: UITextFieldDelegate {
     
     func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
         tappableBackgroundView.isHidden = false

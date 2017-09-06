@@ -2,7 +2,7 @@
 import UIKit
 
 
-class WorkoutListTableViewCell: UITableViewCell {
+class ClassListTableViewCell: UITableViewCell {
     @IBOutlet weak var nameLabel: UILabel!
     @IBOutlet weak var gradeLabel: UILabel!
     @IBOutlet weak var gradeScoreLabel: UILabel!

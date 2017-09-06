@@ -1,44 +1,40 @@
 
 import Foundation
 
-protocol WorkoutListModelDelegate: class {
+protocol ClassListModelDelegate: class {
     func dataRefreshed()
 }
 
-protocol WorkoutListModelInterface {
-    weak var delegate: WorkoutListModelDelegate? { get set }
+protocol ClassListModelInterface {
+    weak var delegate: ClassListModelDelegate? { get set }
     var count: Int { get }
-    func workout(atIndex index: Int) -> classEntry?
+    func ClassEntry(atIndex index: Int) -> classEntry?
     func save(workout: classEntry)
     func sortByDuration()
     var currentCompletedGPA: Double? { get }
     var currentProjectedGPA: Double? { get }
     func delete(classEntrytoDelete: classEntry)
-
-
-//    func sortByCaloriesBurnedDescending()
-//    func sortByDate(ascending: Bool)
 }
 
-class WorkoutListModel: WorkoutListModelInterface {
+class ClassListModel: ClassListModelInterface {
     
-    weak var delegate: WorkoutListModelDelegate?
+    weak var delegate: ClassListModelDelegate?
     
-    private var workouts = [classEntry]()
+    private var ClassEntries = [classEntry]()
     private let persistence: WorkoutPersistenceInterface?
     
     init() {
         self.persistence = ApplicationSession.sharedInstance.persistence
-        workouts = self.persistence?.savedWorkouts ?? []
+        ClassEntries = self.persistence?.savedWorkouts ?? []
     }
     
     var count: Int {
-        return workouts.count
+        return ClassEntries.count
     }
     var totalCompletedGradeScore: Double? {
-        if workouts.count != 0 {
+        if ClassEntries.count != 0 {
             var total = 0.0
-            workouts.forEach {
+            ClassEntries.forEach {
                 if $0.isProjectedGrade == false {
                     if $0.isRepeat {
                         total += $0.completedNewGradeScore()!
@@ -59,9 +55,9 @@ class WorkoutListModel: WorkoutListModelInterface {
     }
     
     var totalProjectedGradeScore: Double? {
-        if workouts.count != 0 {
+        if ClassEntries.count != 0 {
             var total = 0.0
-            workouts.forEach {
+            ClassEntries.forEach {
                 if $0.isProjectedGrade {
                     if $0.isRepeat {
                         total += $0.projectedNewGradeScore()!
@@ -78,9 +74,9 @@ class WorkoutListModel: WorkoutListModelInterface {
     }
     
     var totalOverallGradeScore: Double? {
-        if workouts.count != 0 {
+        if ClassEntries.count != 0 {
             var total = 0.0
-            workouts.forEach {
+            ClassEntries.forEach {
                 total += $0.gradeScore()
             }
             return total
@@ -90,9 +86,9 @@ class WorkoutListModel: WorkoutListModelInterface {
     }
     
     var totalOverallCreditHours: Int? {
-        if workouts.count != 0 {
+        if ClassEntries.count != 0 {
             var total = 0
-            workouts.forEach {
+            ClassEntries.forEach {
                 total += $0.creditHours
             }
             return total
@@ -103,9 +99,9 @@ class WorkoutListModel: WorkoutListModelInterface {
     }
     
     var totalCompletedCreditHours: Int? {
-        if workouts.count != 0 {
+        if ClassEntries.count != 0 {
             var total = 0
-            workouts.forEach {
+            ClassEntries.forEach {
                 if $0.isProjectedGrade == false {
                     total += $0.creditHours
                 } else if $0.isProjectedGrade && $0.isRepeat {
@@ -121,9 +117,9 @@ class WorkoutListModel: WorkoutListModelInterface {
     }
     
     var totalProjectedCreditHours: Int? {
-        if workouts.count != 0 {
+        if ClassEntries.count != 0 {
             var total = 0
-            workouts.forEach {
+            ClassEntries.forEach {
                 if $0.isProjectedGrade {
                     total += $0.creditHours
                 }
@@ -135,25 +131,25 @@ class WorkoutListModel: WorkoutListModelInterface {
     }
     
     
-    func workout(atIndex index: Int) -> classEntry? {
-        return workouts.element(at: index)
+    func ClassEntry(atIndex index: Int) -> classEntry? {
+        return ClassEntries.element(at: index)
     }
     
     func save(workout: classEntry) {
-        workouts.append(workout)
+        ClassEntries.append(workout)
         persistence?.save(workout: workout)
         delegate?.dataRefreshed()
     }
     
     func delete(classEntrytoDelete: classEntry) {
-        let indexToDelete = workouts.index(where: {$0.id == classEntrytoDelete.id})
-        workouts.remove(at: indexToDelete!)
+        let indexToDelete = ClassEntries.index(where: {$0.id == classEntrytoDelete.id})
+        ClassEntries.remove(at: indexToDelete!)
         persistence?.delete(classEntry: classEntrytoDelete)
         delegate?.dataRefreshed()
     }
     
     func sortByDuration () {
-        workouts = workouts.sorted { $0.grade > $1.grade}
+        ClassEntries = ClassEntries.sorted { $0.grade > $1.grade}
         delegate?.dataRefreshed()
     }
     var currentCompletedGPA: Double? {
@@ -176,19 +172,7 @@ class WorkoutListModel: WorkoutListModelInterface {
             return nil
         }
     }
-//    func sortByCaloriesBurnedDescending() {
-//        workouts = workouts.sorted { $0.caloriesBurned() > $1.caloriesBurned()}
-//        delegate?.dataRefreshed()
-//    }
-//    func sortByDate(ascending: Bool) {
-//        if ascending {
-//            workouts = workouts.sorted { $0.date < $1.date }
-//
-//        } else {
-//            workouts = workouts.sorted { $0.date > $1.date }
-//        }
-//        delegate?.dataRefreshed()
-//    }
+
 }
 
 

@@ -11,13 +11,13 @@ extension Double {
     }
 }
 
-class WorkoutListViewController: UIViewController {
+class ClassListViewController: UIViewController {
 
     @IBOutlet weak var CurrentGPALabel: UILabel!
     @IBOutlet weak var projectedGPALabel: UILabel!
     @IBOutlet weak fileprivate var tableView: UITableView!
     
-    fileprivate var model: WorkoutListModelInterface = WorkoutListModel()
+    fileprivate var model: ClassListModelInterface = ClassListModel()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -37,17 +37,17 @@ class WorkoutListViewController: UIViewController {
             os_log("Adding a new class.", log: OSLog.default, type: .debug)
         case "editItem":
             os_log("Editing a new class.", log: OSLog.default, type: .debug)
-             guard let WorkoutCreationViewController = segue.destination as? WorkoutCreationViewController else {
+             guard let WorkoutCreationViewController = segue.destination as? ClassCreationViewController else {
                 fatalError("Unexpected destination: \(segue.destination)")
             }
-            guard let selectedClassCell = sender as? WorkoutListTableViewCell else {
+            guard let selectedClassCell = sender as? ClassListTableViewCell else {
                 fatalError("Unexpected sender: \(sender)")
             }
             
             guard let indexPath = tableView.indexPath(for: selectedClassCell) else {
                 fatalError("The selected cell is not being displayed by the table")
             }
-            let selectedClass = model.workout(atIndex: indexPath.row)
+            let selectedClass = model.ClassEntry(atIndex: indexPath.row)
             WorkoutCreationViewController.selectedClass = selectedClass
 
             
@@ -59,20 +59,16 @@ class WorkoutListViewController: UIViewController {
         }
         
 
-        if let creationViewController = segue.destination as? WorkoutCreationViewController {
+        if let creationViewController = segue.destination as? ClassCreationViewController {
             creationViewController.delegate = self
-        } else if let destination = segue.destination as?
-        WorkoutSortByViewController {
-            destination.delegate = self
-
-        }
+        } 
     }
 
 
 
 }
 
-extension WorkoutListViewController: UITableViewDataSource {
+extension ClassListViewController: UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return model.count
@@ -85,8 +81,8 @@ extension WorkoutListViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard
             let cell = tableView.dequeueReusableCell(withIdentifier: "WorkoutCell",
-                                                     for: indexPath) as? WorkoutListTableViewCell,
-            let workout = model.workout(atIndex: indexPath.row)
+                                                     for: indexPath) as? ClassListTableViewCell,
+            let workout = model.ClassEntry(atIndex: indexPath.row)
         else { return UITableViewCell() }
     
         cell.decorate(with: workout)
@@ -98,12 +94,12 @@ extension WorkoutListViewController: UITableViewDataSource {
     }
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
-            model.delete(classEntrytoDelete: model.workout(atIndex: indexPath.row)!)
+            model.delete(classEntrytoDelete: model.ClassEntry(atIndex: indexPath.row)!)
         }
     }
 }
 
-extension WorkoutListViewController: WorkoutCreationViewControllerDelegate {
+extension ClassListViewController: WorkoutCreationViewControllerDelegate {
     func delete(classEntrytoDelete classEntry: classEntry) {
         model.delete(classEntrytoDelete: classEntry)
     }
@@ -111,22 +107,6 @@ extension WorkoutListViewController: WorkoutCreationViewControllerDelegate {
     func save(workout: classEntry) {
         model.save(workout: workout)
     }
-}
-
-extension WorkoutListViewController: WorkoutListModelDelegate {
-    func dataRefreshed() {
-        tableView.reloadData()
-        updateLabels()
-
-
-    }
-}
-
-extension WorkoutListViewController: WorkoutSortByViewControllerDelegate {
-    func sortByDuration() {
-        model.sortByDuration()
-    }
-    
     func updateLabels() {
         if let currentCompletedGPA = model.currentCompletedGPA {
             CurrentGPALabel.text = "Completed GPA: \(currentCompletedGPA.roundTo(places: 3))"
@@ -138,19 +118,18 @@ extension WorkoutListViewController: WorkoutSortByViewControllerDelegate {
             projectedGPALabel.text = "Projected GPA: \(currentProjectedGPA.roundTo(places: 3))"
         } else {
             projectedGPALabel.text = "Projected GPA:"
-
+            
         }
+        
+    }
+}
+
+extension ClassListViewController: ClassListModelDelegate {
+    func dataRefreshed() {
+        tableView.reloadData()
+        updateLabels()
+
 
     }
-//    func sortByCaloriesBurned() {
-//        model.sortByCaloriesBurnedDescending()
-//    }
-//    func sortByDate(ascending: Bool) {
-//        if ascending {
-//            model.sortByDate(ascending: true)
-//        } else {
-//            model.sortByDate(ascending: false)
-//        }
-//    }
-    
 }
+
